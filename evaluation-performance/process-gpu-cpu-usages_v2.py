@@ -1,4 +1,3 @@
-
 import matplotlib.pyplot as plt
 import datetime
 import numpy as np
@@ -11,7 +10,7 @@ def plot_time_series(x,y,label):
   #y = np.random.randint(100, size=x.shape)
   if label=="CPU":
     maxMem=np.max(y)
-    label +="__maxMem_"+str(round(maxMem,3))+"GB"
+    label +="__maxMem_"+str(round(maxMem,9))+"GB"
     y/=maxMem
     y*=100
   plt.plot(x,y,label=label)
@@ -27,10 +26,10 @@ def read_gpu_data(fn,skip_header):
         if i>=skip_header:
           line=line.strip('\n')
           line=line.split(", ")
-          line[-2]=float(line[-2])
+          #line[-2]=float(line[-2])
           #print(line)
-          tim=datetime.strptime(line[0],"%Y/%m/%d %H:%M:%S.%f")
-          time_series.append(tim),usage.append(line[-2])
+          tim=datetime.strptime(line[1],"%Y/%m/%d %H:%M:%S.%f")
+          time_series.append(tim),usage.append(float(line[-1])) #][-2])
         i +=1
   return time_series, usage
 def read_cpu_data(fn,skip_header):
@@ -43,11 +42,11 @@ def read_cpu_data(fn,skip_header):
         if i>=skip_header:
           line=line.strip('\n')
           line=line.split(" ")
-          tim=line[1]+" "+line[2]+" "+line[3]+" "+line[5]
+          tim=line[1]+" "+line[2]+" "+line[3]+" "+line[6]
           tim=datetime.strptime(tim,"%b %d %H:%M:%S %Y")
           used=0
           for i in range(9,len(line),2):
-            used +=float(line[i])/1e6 # MiB=1024.0**2; MB=1e6
+            used +=float(line[i])/1e9 # MiB=1024.0**2; MB=1e6
           time_series.append(tim),usage.append(used)
         i +=1
     return time_series, usage, label
@@ -58,7 +57,7 @@ def read_cpu_data(fn,skip_header):
         if i>=skip_header+1:
           line=line.strip('\n')
           line=line.split(" ")
-          tim=line[1]+" "+line[2]+" "+line[3]+" "+line[5]
+          tim=line[1]+" "+line[2]+" "+line[3]+" "+line[6]
           tim=datetime.strptime(tim,"%b %d %H:%M:%S %Y")
           used=float(line[-1])/1e9
           time_series.append(tim),usage.append(round(used,3))
@@ -76,6 +75,7 @@ def read_cpu_data(fn,skip_header):
   #usage_max=np.copy(usage1[0:min_ID])/1e9
   #return time_series, usage, time_series_max, usage_max
 def plot_file(fn):
+    print(fn)
     if "gpu" in fn:
       time_series, usage = read_gpu_data(fn,skip_header=1)
       label="GPU"
@@ -98,6 +98,8 @@ if __name__=="__main__":
     for i in range(1,len(sys.argv)): #(1,3):
       fn=sys.argv[i]
       print("file: ",fn)
+      #if "cpu" not in sys.argv[i]:
+      #  plot_file(fn)
       plot_file(fn)
     plt.savefig("gpu_cpu_usage.png",dpi=300)
     plt.show()
