@@ -17,5 +17,8 @@ while true; do echo `date; ps -u$USER -o %cpu,rss` >> ${wk_dir}/${cpu_usages_log
 max_cpu_usages_log="${SLURM_JOB_ID}-max-cpu-usages.log"
 echo "time max_mem_used" > ${wk_dir}/${max_cpu_usages_log}
 while true; do max_mem=`cat /sys/fs/cgroup/memory/slurm/uid_${UID}/job_${SLURM_JOB_ID}/memory.max_usage_in_bytes`; echo `date; echo ${max_mem}` >> ${wk_dir}/${max_cpu_usages_log}; sleep 5; done &
+#----------gpu usage--------
+gpu_usages_log="${SLURM_JOB_ID}-gpu-usages.log"
+/usr/bin/nvidia-smi --query-gpu=index,timestamp,utilization.gpu --format=csv,nounits,noheader --loop=5 > ${wk_dir}/${gpu_usages_log} 2>&1 &
 #--------end memory recording--------
 
